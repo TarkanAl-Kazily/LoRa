@@ -410,7 +410,7 @@ unsigned char sx1278_LoRaEntryRx(void)
 	
 	SPIWrite(REG_LR_PADAC, 0x84 );
 	SPIWrite(LR_RegHopPeriod, 0xFF);
-	SPIWrite(REG_LR_DIOMAPPING1, 0x01 );
+	SPIWrite(REG_LR_DIOMAPPING1, 0x01); //Maybe set to 0x00 for RxDone
 	
 	SPIWrite(LR_RegIrqFlagsMask, 0x3f);
 	
@@ -425,7 +425,7 @@ unsigned char sx1278_LoRaEntryRx(void)
 	SPIWrite(LR_RegOpMode, 0x8d);			// Set the Operating Mode to Continuos Rx Mode && Low Frequency Mode
 	
     mySerial.print("read SPI LR_RegModemStat");
-	while (1) 	{
+	while (1) 	{ //Bug
 			if ((SPIRead(LR_RegModemStat) & 0x04) == 0x04) {
 				break;
             }    
@@ -450,39 +450,42 @@ unsigned char sx1278_LoRaRxPacket (void)
 	unsigned char addr;
 	unsigned char packet_size;
 	
-        mySerial.print("processing LoRaRx Packet");
-        mySerial.println(" ");
+    mySerial.print("processing LoRaRx Packet");
+    mySerial.println(" ");
 	
 	if (digitalRead(dio0)) 	{
-	       mySerial.println("DIO_0 shows packet recieved");
+	    mySerial.println("DIO_0 shows packet recieved");
 		
-        	for (i = 0; i < 32; i++ ) {
-				RxData[i] = 0x00;
-			}
-	
-	addr = SPIRead(LR_RegFifoRxCurrentAddr);
-	SPIWrite(LR_RegFifoAddrPtr, addr);		// RXBaseAddr --> FiFoAddrPtr
-	
-	if (sx1278SpreadFactorTbl[Lora_Rate_Sel] == 6 ) {
-		packet_size = 21;
-	} else {
-		packet_size = SPIRead(LR_RegRxNbBytes);
+       	for (i = 0; i < 32; i++ ) {
+			RxData[i] = 0x00;
 		}
 	
-	SPIBurstRead(0x00, RxData, packet_size);
+	    addr = SPIRead(LR_RegFifoRxCurrentAddr);
+	    SPIWrite(LR_RegFifoAddrPtr, addr);		// RXBaseAddr --> FiFoAddrPtr
 	
-	sx1278_LoRaClearIrq();
+	    if (sx1278SpreadFactorTbl[Lora_Rate_Sel] == 6 ) {
+		    packet_size = 21;
+	    } else {
+		    packet_size = SPIRead(LR_RegRxNbBytes);
+	    }
 	
-	for ( i = 0; i< 17; i++ ) {
-		if (RxData[i] != sx1278Data[i] ) break;
+	    SPIBurstRead(0x00, RxData, packet_size);
+	
+    	sx1278_LoRaClearIrq();
+	
+	    for ( i = 0; i< 17; i++ ) {
+		    if (RxData[i] != sx1278Data[i] )
+		        break;
+	    }
+	
+	    if ( i > 17 ) {
+	    	return (i);
+	    } else {
+	        return (0);
+	    }
 	}
-	
-	if ( i > 17 ) {
-		return (i);
-	} else return (0);
-	
-	}
-	else return(0); // if !(digitalRead(dio0) --> this is important for recieving packets
+	else
+	    return(0); // if !(digitalRead(dio0) --> this is important for recieving packets
 }
 
 
