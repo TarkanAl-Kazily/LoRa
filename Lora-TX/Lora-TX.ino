@@ -47,7 +47,7 @@ LED / D14 	A1, 19
 //
 //
 
-int led = 19; 					// Pro Micro P19, A1, D14
+//int led = 19; 					// Pro Micro P19, A1, D14
 int nsel = 18;					// Pro Micro P18, A0, 	SX1278	CS
 int sck = 15;
 int mosi = 16;
@@ -56,7 +56,7 @@ int dio0 = 20;
 int reset = 21;
 
 // Define Modes
-#define SX1278_MODE_RX_CONTINUOUS			        0x00
+#define SX1278_MODE_RX_CONTINUOUS			0x00
 #define SX1278_MODE_TX						0x00
 #define SX1278_MODE_SLEEP					0x00
 #define SX1278_MODE_STANDBY					0x00
@@ -609,7 +609,7 @@ void sx1278_Config(void) {
 	
 	
 void setup() {
-    pinMode(led, OUTPUT);
+    //pinMode(led, OUTPUT);
     pinMode(nsel, OUTPUT);
     pinMode(sck, OUTPUT);
     pinMode(mosi, OUTPUT);
@@ -646,9 +646,9 @@ void loop() {
 
 
 
-	digitalWrite(led, HIGH); 	// turn the LED on
-	delay(500); 				// wait for 500ms
-	digitalWrite(led, LOW); 	// turn the LED off
+	//digitalWrite(led, HIGH); 	// turn the LED on
+	//delay(500); 				// wait for 500ms
+	//digitalWrite(led, LOW); 	// turn the LED off
 	delay(500);					// wait for 500ms
 	
         int loopCnt = 0;
@@ -681,7 +681,7 @@ void loop() {
                      delay(3000);
                  }
                  
-                digitalWrite(led, HIGH);
+                //digitalWrite(led, HIGH);
                 delay(200);
                 mySerial.print(loopCnt);
                 mySerial.print(": Check Lora Entry Tx \n");
@@ -689,7 +689,7 @@ void loop() {
                 mySerial.print(loopCnt);
                 mySerial.print(": Check Lora TX packet \n");
 		sx1278_LoRaTxPacket();
-		digitalWrite(led, LOW);
+		//digitalWrite(led, LOW);
 		sx1278_LoRaEntryRx();
 		delay(200);
 		loopCnt++;
@@ -698,7 +698,7 @@ void loop() {
                   sx1278Data[i] = char(0x61 + i);
                 }
               
-}
+    }
 }
 
 
