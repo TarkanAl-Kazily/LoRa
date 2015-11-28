@@ -47,16 +47,16 @@ LED / D14 	A1, 19
 //
 //
 
-int led = 19; 					// Pro Micro P19, A1, D14
-int nsel = 18;					// Pro Micro P18, A0, 	SX1278	CS
-int sck = 15;
-int mosi = 16;
-int miso = 14;
-int dio0 = 20;
-int reset = 21;
+//int led = 19; 					// Pro Micro P19, A1, D14
+int nsel = 2;					// Pro Micro P18, A0, 	SX1278	CS
+int sck = 13;
+int mosi = 11;
+int miso = 12;
+int dio0 = 7;
+//int reset = 21;
 
 // Define Modes
-#define SX1278_MODE_RX_CONTINUOUS			        0x00
+#define SX1278_MODE_RX_CONTINUOUS				0x00
 #define SX1278_MODE_TX						0x00
 #define SX1278_MODE_SLEEP					0x00
 #define SX1278_MODE_STANDBY					0x00
@@ -593,12 +593,12 @@ void sx1278_Config(void) {
 	
 	
 void setup() {
-    pinMode(led, OUTPUT);
+    //pinMode(led, OUTPUT);
     pinMode(nsel, OUTPUT);
     pinMode(sck, OUTPUT);
     pinMode(mosi, OUTPUT);
     pinMode(miso, OUTPUT);
-    pinMode(reset, OUTPUT);
+    //pinMode(reset, OUTPUT);
     
     Serial.begin(9600);
     mySerial.begin(9600);
@@ -631,9 +631,9 @@ void loop() {
         mySerial.println(" ");
 
         //digitalWrite(dio0, HIGH);
-	digitalWrite(led, HIGH); 	// turn the LED on
+	//digitalWrite(led, HIGH); 	// turn the LED on
 	delay(500); 	// wait for 500ms
-	digitalWrite(led, LOW); 	// turn the LED off
+	//digitalWrite(led, LOW); 	// turn the LED off
 	delay(500);	// wait for 500ms
 	
         int loopCnt = 0;
@@ -735,9 +735,9 @@ void loop() {
 	if(sx1278_LoRaRxPacket())
 	{
 	mySerial.println("Packet Recieved");
-  	digitalWrite(led, HIGH);
+  	//digitalWrite(led, HIGH);
 	delay(500);
-	digitalWrite(led, LOW);
+	//digitalWrite(led, LOW);
 	delay(500);
 	}	
 

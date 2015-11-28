@@ -15,9 +15,6 @@ Pinouts: RX (yellow wire) -> TXO (pin 0), TX (red wire) -> RX0, GNd (Blue) -> GN
 Transmit mode : continuous transmit
 *************************************/
 
-SoftwareSerial console(1, 0);    // RX, TX
-
-
 unsigned char mode; //lora --1 / FSK --0
 unsigned char Freq_Sel; //
 unsigned char Power_Sel; //
@@ -27,13 +24,13 @@ unsigned char Fsk_Rate_Sel; //
 
 // Pinout for Arduino Pro Micro
 
-int led = 19; 					// Pro Micro P19, A1, D14
-int nsel = 18;					// Pro Micro P18, A0, 	SX1278	CS
-int sck = 15;
-int mosi = 16;
-int miso = 14;
-int dio0 = 20;
-int reset = 21;
+//int led = 19;                     // Pro Micro P19, A1, D14
+int nsel = 2;                   // Pro Micro P18, A0,   SX1278  CS
+int sck = 13;
+int mosi = 11;
+int miso = 12;
+int dio0 = 7;
+//int reset = 21;
 
 // Define Modes
 #define SX1278_MODE_RX_CONTINUOUS			        0x00
@@ -384,9 +381,9 @@ void sx1278_LoRaClearIrq(void)
 unsigned char sx1278_LoRaEntryRx(void)
 {
 	unsigned char addr;
-	console.println("Console: Enter sx76 Config");
+	Serial.println("Console: Enter sx76 Config");
 	sx1278_Config();	// setting base parater
-	console.println("Console: Write SPI");
+	Serial.println("Console: Write SPI");
 	
 	SPIWrite(REG_LR_PADAC, 0x84 );
 	SPIWrite(LR_RegHopPeriod, 0xFF);
@@ -394,7 +391,7 @@ unsigned char sx1278_LoRaEntryRx(void)
 	
 	SPIWrite(LR_RegIrqFlagsMask, 0x3f);
 	
-    console.println("Console: LoRa Clear IRQ");
+    Serial.println("Console: LoRa Clear IRQ");
 	sx1278_LoRaClearIrq();
 	
 	SPIWrite(LR_RegPayloadLength, 21);
@@ -404,7 +401,7 @@ unsigned char sx1278_LoRaEntryRx(void)
 	SPIWrite(LR_RegFifoAddrPtr, addr);
 	SPIWrite(LR_RegOpMode, 0x8d);			// Set the Operating Mode to Continuos Rx Mode && Low Frequency Mode
 	
-    console.print("Console: read SPI LR_RegModemStat");
+    Serial.print("Console: read SPI LR_RegModemStat");
 	while (1) 	{
 			if ((SPIRead(LR_RegModemStat) & 0x04) == 0x04) {
 				break;
@@ -430,11 +427,11 @@ unsigned char sx1278_LoRaRxPacket (void)
 	unsigned char addr;
 	unsigned char packet_size;
 	// never gets here
-        console.print("############# processing LoRaRx Packet ################");
-        console.println(" ");
+        Serial.print("############# processing LoRaRx Packet ################");
+        Serial.println(" ");
 	// never gets here
 	if (digitalRead(dio0)) 	{
-	       console.println("Console: DIO_0 shows packet recieved");
+	       Serial.println("Console: DIO_0 shows packet recieved");
 		
         	for (i = 0; i < 32; i++ ) {
 				RxData[i] = 0x00;
@@ -573,26 +570,25 @@ void sx1278_Config(void) {
 	
 	
 void setup() {
-    pinMode(led, OUTPUT);
+    //pinMode(led, OUTPUT);
     pinMode(nsel, OUTPUT);
     pinMode(sck, OUTPUT);
     pinMode(mosi, OUTPUT);
     pinMode(miso, OUTPUT);
-    pinMode(reset, OUTPUT);
+    //pinMode(reset, OUTPUT);
     
     Serial.begin(9600);
-    console.begin(9600);
-    console.println("########################################");
+    Serial.println("########################################");
     delay(10);	
-    console.println("Console: Software Serial Port Connected");
+    Serial.println("Console: Software Serial Port Connected");
     delay(10);	
-    console.println("#########################################");
+    Serial.println("#########################################");
     for (int i=0; i<200; i++);
     {
-      console.print("&");
+      Serial.print("&");
       delay(10);
     }
-    console.println(" ");  
+    Serial.println(" ");  
     
 }    
 
@@ -606,42 +602,42 @@ void loop() {
 	BandWide_Sel 	= 0x07;
 	Fsk_Rate_Sel 	= 0x00;
          // added this as the programmer was not workiing....
-        console.println("####################");
+        Serial.println("####################");
         delay(10);	
-        console.println("06-AUG-2015 LoRa-RX");
+        Serial.println("06-AUG-2015 LoRa-RX");
         delay(10);
-        console.println("####################");
+        Serial.println("####################");
         delay(1000);
 
         Serial.println("sx1276 Config \n");
-	console.println("Console: sx1276 Config \n");
+	Serial.println("Console: sx1276 Config \n");
         sx1278_Config();
         Serial.println("Console: sx1276 LoRa Entry Recieve \n");
-        console.println("Console: sx1276 LoRa Entry Recieve \n");
+        Serial.println("Console: sx1276 LoRa Entry Recieve \n");
 		sx1278_LoRaEntryRx();
 
-        console.println("Console: sx1276 LoRa Entry Recieve Complete \n");	
-        console.println("Console: RX Data buffer contains");
+        Serial.println("Console: sx1276 LoRa Entry Recieve Complete \n");	
+        Serial.println("Console: RX Data buffer contains");
         for (int i=0; i<64; i++) {
-          console.print(RxData[i]);
+          Serial.print(RxData[i]);
         }
-        console.println(" ");
+        Serial.println(" ");
 
-        digitalWrite(led, HIGH); 	// turn the LED on
+        //digitalWrite(led, HIGH); 	// turn the LED on
 	delay(500); 	// wait for 500ms
-	digitalWrite(led, LOW); 	// turn the LED off
+	//digitalWrite(led, LOW); 	// turn the LED off
 	delay(500);	// wait for 500ms
 	
         int loopCnt = 0;
 	while(1) {
 	
 	// Slave
-	console.println("Console: Waiting for RX packet  ");
+	Serial.println("Console: Waiting for RX packet  ");
         char fromSPI = SPIRead(LR_RegFifoRxCurrentAddr);
-        console.print("Console: Reg FIFO Rx Current Address  ");
-        console.print(fromSPI, HEX);
-        console.println(" ");
-        console.println(" ");
+        Serial.print("Console: Reg FIFO Rx Current Address  ");
+        Serial.print(fromSPI, HEX);
+        Serial.println(" ");
+        Serial.println(" ");
         delay(1000);
         
         // check the Modem Status Indicators
@@ -649,10 +645,10 @@ void loop() {
         // frmo thr ModemStatus bits in RegModemStat
         char lrModemStat = SPIRead(LR_RegModemStat);
         // Signal Detected bit 0
-        console.println();
-        console.print("Console: RegModem (LoRa) Stat 0x");
-        console.print(lrModemStat, HEX);
-        console.println();
+        Serial.println();
+        Serial.print("Console: RegModem (LoRa) Stat 0x");
+        Serial.print(lrModemStat, HEX);
+        Serial.println();
        
        SPIWrite(LR_RegOpMode, 0x15);
        digitalWrite(dio0, HIGH);
@@ -662,46 +658,46 @@ void loop() {
        char showOpMode = SPIRead(LR_RegOpMode);
 
        if (showOpMode && 0x80 == 0 )
-           console.println("Console: OpMode is FSK");
+           Serial.println("Console: OpMode is FSK");
        else
-           console.println("Console: OpMode is LoRa");
+           Serial.println("Console: OpMode is LoRa");
         
        showOpMode = SPIRead(LR_RegOpMode);// && 0xF8;
-       console.print("Console: OpMode Regsiters = ");
-       console.print(showOpMode, HEX);
-       console.println(" ");
+       Serial.print("Console: OpMode Regsiters = ");
+       Serial.print(showOpMode, HEX);
+       Serial.println(" ");
        
        switch(showOpMode) { 
        case 0:
-          console.println("OpMode is 0 SLEEP");
+          Serial.println("OpMode is 0 SLEEP");
           break;
       
        case 1:
-          console.println("OpMode is 1 STBY");
+          Serial.println("OpMode is 1 STBY");
           break;
 
        case 2:       
-          console.println("OpMode is 2 FSTX");      
+          Serial.println("OpMode is 2 FSTX");      
           break;
 
        case 3:
-          console.println("OpMode is 3 TX");      
+          Serial.println("OpMode is 3 TX");      
           break;
 
        case 4:
-          console.println("OpMode is 4 FSRX");         
+          Serial.println("OpMode is 4 FSRX");         
           break;
 
        case 5:      
-          console.println("OpMode is 5 RXCONTINUOUS");      
+          Serial.println("OpMode is 5 RXCONTINUOUS");      
           break;
 
        case 6:
-          console.println("OpMode is 6 RXSINGLE");         
+          Serial.println("OpMode is 6 RXSINGLE");         
           break;
 
        case 7:       
-          console.println("OpMode is 7 CAN");      
+          Serial.println("OpMode is 7 CAN");      
           break;
           
        }
@@ -711,39 +707,39 @@ void loop() {
         /*       
        char modemStat = SPIRead(LR_RegModemStat);
        modemStat = modemStat && B00011111;
-       console.print("Modem Register Status :");
-       console.print(modemStat, HEX);
-       console.println(" ");
+       Serial.print("Modem Register Status :");
+       Serial.print(modemStat, HEX);
+       Serial.println(" ");
        */
      
        char RSSIVal = SPIRead(0x1B);
-       console.print("Console: RSSI is ");
-       console.print(RSSIVal, HEX);
-       console.print(" dBm");
-       console.println(" ");
+       Serial.print("Console: RSSI is ");
+       Serial.print(RSSIVal, HEX);
+       Serial.print(" dBm");
+       Serial.println(" ");
        
        
 	if(sx1278_LoRaRxPacket())  // this does not seem to be used
 	{
 
-  	digitalWrite(led, HIGH);
+  	//digitalWrite(led, HIGH);
 	delay(500);
-	digitalWrite(led, LOW);
+	//digitalWrite(led, LOW);
 	delay(500);
 	}	
 
-        // console.println("End of loop");
-        console.println("Console: RX Data buffer contains ");
+        // Serial.println("End of loop");
+        Serial.println("Console: RX Data buffer contains ");
             for (int i=0; i<64; i++) {
-              console.print(char(RxData[i]));
-              console.print(" ");
+              Serial.print(char(RxData[i]));
+              Serial.print(" ");
               }
         
          for (int i=0; i<200; i++) {
-              console.print(".");
+              Serial.print(".");
               delay(10);
             }
-        console.println(" ");    
+        Serial.println(" ");    
       
         sx1278_LoRaEntryRx();
 

@@ -6,8 +6,6 @@ Modulation: LoRA
 Transmit mode : continuous transmit
 *************************************/
 
-#include <SoftwareSerial.h>
-
 /*************************************
 Software Serial Setup
 Data Rate : 9600bps
@@ -15,7 +13,6 @@ Pinouts: RX (yellow wire) -> TXO (pin 0), TX (red wire) -> RX0, GNd (Blue) -> GN
 Transmit mode : continuous transmit
 *************************************/
 
-SoftwareSerial mySerial(1, 0);    // RX, TX
 
 
 unsigned char mode; //lora --1 / FSK --0
@@ -48,12 +45,12 @@ LED / D14 	A1, 19
 //
 
 //int led = 19; 					// Pro Micro P19, A1, D14
-int nsel = 18;					// Pro Micro P18, A0, 	SX1278	CS
-int sck = 15;
-int mosi = 16;
-int miso = 14;
-int dio0 = 20;
-int reset = 21;
+int nsel = 2;					// Pro Micro P18, A0, 	SX1278	CS
+int sck = 13;
+int mosi = 11;
+int miso = 12;
+int dio0 = 7;
+//int reset = 21;
 
 // Define Modes
 #define SX1278_MODE_RX_CONTINUOUS			0x00
@@ -404,9 +401,9 @@ void sx1278_LoRaClearIrq(void)
 unsigned char sx1278_LoRaEntryRx(void)
 {
 	unsigned char addr;
-	mySerial.println("Enter sx76 Config");
+	Serial.println("Enter sx76 Config");
 	sx1278_Config();	// setting base parater
-	mySerial.println("Write SPI");
+	Serial.println("Write SPI");
 	
 	SPIWrite(REG_LR_PADAC, 0x84 );
 	SPIWrite(LR_RegHopPeriod, 0xFF);
@@ -414,7 +411,7 @@ unsigned char sx1278_LoRaEntryRx(void)
 	
 	SPIWrite(LR_RegIrqFlagsMask, 0x3f);
 	
-    mySerial.println("LoRa Clear IRQ");
+    Serial.println("LoRa Clear IRQ");
 	sx1278_LoRaClearIrq();
 	
 	SPIWrite(LR_RegPayloadLength, 21);
@@ -424,7 +421,7 @@ unsigned char sx1278_LoRaEntryRx(void)
 	SPIWrite(LR_RegFifoAddrPtr, addr);
 	SPIWrite(LR_RegOpMode, 0x8d);			// Set the Operating Mode to Continuos Rx Mode && Low Frequency Mode
 	
-    mySerial.print("read SPI LR_RegModemStat");
+    Serial.print("read SPI LR_RegModemStat");
 	while (1) 	{ //Bug
 			if ((SPIRead(LR_RegModemStat) & 0x04) == 0x04) {
 				break;
@@ -450,11 +447,11 @@ unsigned char sx1278_LoRaRxPacket (void)
 	unsigned char addr;
 	unsigned char packet_size;
 	
-    mySerial.print("processing LoRaRx Packet");
-    mySerial.println(" ");
+    Serial.print("processing LoRaRx Packet");
+    Serial.println(" ");
 	
 	if (digitalRead(dio0)) 	{
-	    mySerial.println("DIO_0 shows packet recieved");
+	    Serial.println("DIO_0 shows packet recieved");
 		
        	for (i = 0; i < 32; i++ ) {
 			RxData[i] = 0x00;
@@ -558,7 +555,7 @@ void sx1278_Config(void) {
 
 	//lora mode
 	sx1278_EntryLoRa();
-	mySerial.println("Config - Entry LoRa Complete");
+	Serial.println("Config - Entry LoRa Complete");
 	//SPIWrite(0x5904); // change digital regulator from 1.6V to 1.47V: see errata note
 	
 	BurstWrite(LR_RegFrMsb, sx1278FreqTbl[Freq_Sel],3); //set the frequency parameter
@@ -573,7 +570,7 @@ void sx1278_Config(void) {
 	if(sx1278SpreadFactorTbl[Lora_Rate_Sel]==6)
 	{	
 		unsigned char tmp;
-		mySerial.println("config - if loop");
+		Serial.println("config - if loop");
 		SPIWrite(LR_RegModemConfig1, ((sx1278LoRaBwTbl[BandWide_Sel] << 4)+(CR<<1)+0x01));
 		// Implicit Enable CRC Enable (0x02) & Error Coding rate 4/5 (0x01), 4/6 (0x02), 4/7 (0x03), 4/8 (0x04)
 	
@@ -588,7 +585,7 @@ void sx1278_Config(void) {
 	
 	else
 	{
-          	mySerial.println("config - elseif loop");
+          	Serial.println("config - elseif loop");
   		SPIWrite(LR_RegModemConfig1,((sx1278LoRaBwTbl[BandWide_Sel] <<4 )+(CR<<1)+0x00));
 		SPIWrite(LR_RegModemConfig2, ((sx1278SpreadFactorTbl[Lora_Rate_Sel]<<4)+ (CRC<<2)+0x03));
 	}
@@ -602,11 +599,11 @@ void sx1278_Config(void) {
 	SPIWrite(REG_LR_DIOMAPPING2, 0x01);
 	
 	sx1278_Standby();
-        mySerial.print("Config - finished method, forced Opmde to Standby, opmode is now : ");
-        mySerial.print(SPIRead(LR_RegOpMode));
-        mySerial.print("Config - DIO MAPPING 2 is as follows: ");
-        mySerial.print(SPIRead(REG_LR_DIOMAPPING2), HEX);
-        mySerial.println(" " );
+        Serial.print("Config - finished method, forced Opmde to Standby, opmode is now : ");
+        Serial.print(SPIRead(LR_RegOpMode));
+        Serial.print("Config - DIO MAPPING 2 is as follows: ");
+        Serial.print(SPIRead(REG_LR_DIOMAPPING2), HEX);
+        Serial.println(" " );
         
 }	
 	
@@ -617,14 +614,13 @@ void setup() {
     pinMode(sck, OUTPUT);
     pinMode(mosi, OUTPUT);
     pinMode(miso, OUTPUT);
-    pinMode(reset, OUTPUT);
+    //pinMode(reset, OUTPUT);
     
     Serial.begin(9600);
-    mySerial.begin(9600);
-    mySerial.println("Software Serial Port Connected");
-    mySerial.print("OPmode is ");
-    mySerial.print(SPIRead(LR_RegOpMode), HEX);
-    mySerial.print("\n");
+    Serial.println("Software Serial Port Connected");
+    Serial.print("OPmode is ");
+    Serial.print(SPIRead(LR_RegOpMode), HEX);
+    Serial.print("\n");
     
 }    
 
@@ -639,13 +635,13 @@ void loop() {
 	Fsk_Rate_Sel 	= 0x00;
 	
         Serial.println("sx1276 Config \n");
-	mySerial.println("sx1276 Config \n");
+	Serial.println("sx1276 Config \n");
         sx1278_Config();
 
         Serial.println("sx1276 LoRa Entry Recieve \n");
-        mySerial.println("sx1276 LoRa Entry Recieve \n");
+        Serial.println("sx1276 LoRa Entry Recieve \n");
 	sx1278_LoRaEntryRx();
-        mySerial.println("sx1276 LoRa Entry Recieve Complete \n");	
+        Serial.println("sx1276 LoRa Entry Recieve Complete \n");	
 
 
 
@@ -659,38 +655,38 @@ void loop() {
 	{
 	// Master
 	       	char opMode = SPIRead(LR_RegOpMode);
-                 mySerial.println(" ");
-                 mySerial.print("OpMode Reg Value ");
-                 mySerial.print(opMode, HEX);
+                 Serial.println(" ");
+                 Serial.print("OpMode Reg Value ");
+                 Serial.print(opMode, HEX);
 
                  switch(opMode){
                    case  0:
-                      mySerial.println("OPMode is SLEEP");
+                      Serial.println("OPMode is SLEEP");
                       break;
                    case 1:
-                      mySerial.println("OPMode is STANDBY");
+                      Serial.println("OPMode is STANDBY");
                       break;
                  }
                       
                     
-                 mySerial.println(" ");
+                 Serial.println(" ");
                  
                  if (opMode == 0){
                      SPIWrite(LR_RegOpMode, B00010001);
-                     mySerial.println("Forcing OPMode to STANDBY");
+                     Serial.println("Forcing OPMode to STANDBY");
                      delay(1000);                
-                     mySerial.print("OPMOde is now : ");
-                     mySerial.print(SPIRead(LR_RegOpMode), HEX);
+                     Serial.print("OPMOde is now : ");
+                     Serial.print(SPIRead(LR_RegOpMode), HEX);
                      delay(3000);
                  }
                  
                 //digitalWrite(led, HIGH);
                 delay(200);
-                mySerial.print(loopCnt);
-                mySerial.print(": Check Lora Entry Tx \n");
+                Serial.print(loopCnt);
+                Serial.print(": Check Lora Entry Tx \n");
 		sx1278_LoRaEntryTx();
-                mySerial.print(loopCnt);
-                mySerial.print(": Check Lora TX packet \n");
+                Serial.print(loopCnt);
+                Serial.print(": Check Lora TX packet \n");
 		sx1278_LoRaTxPacket();
 		//digitalWrite(led, LOW);
 		sx1278_LoRaEntryRx();
