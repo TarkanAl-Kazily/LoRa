@@ -13,13 +13,13 @@
 
 // Singleton instance of the radio driver
 RH_RF95 rf95;
-int led = 9;
+//int led = 9;
 boolean shouldPrint = true;
 
 
 void setup() 
 {
-    pinMode(led, OUTPUT);     
+    //pinMode(led, OUTPUT);     
   Serial.begin(9600);
   Serial.println("init starting");
   if (!rf95.init())
@@ -37,7 +37,7 @@ void loop()
     uint8_t len = sizeof(buf);
     if (rf95.recv(buf, &len))
     {
-      digitalWrite(led, HIGH);
+      //digitalWrite(led, HIGH);
 //      RH_RF95::printBuffer("request: ", buf, len);
       Serial.print("got request: ");
       Serial.println(buf[0]);
