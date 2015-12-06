@@ -40,7 +40,7 @@ void loop()
       //digitalWrite(led, HIGH);
 //      RH_RF95::printBuffer("request: ", buf, len);
       Serial.print("got request: ");
-      Serial.println(buf[0]);
+      printBuf(buf);
 //    Serial.print("RSSI: ");
 //    Serial.println(rf95.lastRssi(), DEC);
       
@@ -67,6 +67,18 @@ void loop()
         shouldPrint = false;
     }
   }
+}
+
+#define NUM_TO_PRINT 3
+
+void printBuf(uint8_t bufr[]) {
+    for(int i = 0; i < NUM_TO_PRINT; i++)
+    {
+        Serial.print("Entry " + String(i) + ": ");
+        Serial.print(bufr[i]);
+        Serial.print(" | ");
+    }
+    Serial.println();
 }
 
 
