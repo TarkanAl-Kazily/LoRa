@@ -11,13 +11,14 @@
 #include <SPI.h>
 #include <RH_RF95.h>
 
-#define NUM_TO_PRINT 3
-
 // Singleton instance of the radio driver
 RH_RF95 rf95;
 boolean shouldPrint = true;
 unsigned long tim;
 unsigned long deltaTim;
+
+uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+uint8_t len = sizeof(buf);
 
 void setup() 
 {
@@ -38,14 +39,13 @@ void loop()
     if (rf95.available())
     {
         // Should be a message for us now   
-        uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-        uint8_t len = sizeof(buf);
         if (rf95.recv(buf, &len))
         {
             deltaTim = millis() - tim;
             tim += deltaTim;
             Serial.print("Got request: ");
-            printBuf(buf);
+            //convertTo_uint16_t(buf, 3);
+            printBuf(buf, 3);
         }
         else
         {
@@ -57,14 +57,14 @@ void loop()
     {
         if (shouldPrint)
         {
-            //Serial.println("Nothing available");
+            Serial.println("Nothing available");
             shouldPrint = false;
         }
     }
 }
 
-void printBuf(uint8_t bufr[]) {
-    for(int i = 0; i < NUM_TO_PRINT; i++)
+void printBuf(uint8_t bufr[], int leng) {
+    for(int i = 0; i < leng; i++)
     {
         Serial.print("Entry " + String(i) + ": ");
         Serial.print(bufr[i]);
@@ -75,4 +75,37 @@ void printBuf(uint8_t bufr[]) {
     Serial.println();
 }
 
+void convertTo_uint8_t(uint16_t arr[], int arrLength)
+{
+    for (int i = 0; i < arrLength; i++)
+    {
+        uint16_t number = arr[i];
+        Serial.print(number, HEX);
+        Serial.print(" | ");
+        uint16_t l = number & 0x00FF;
+        uint8_t least = l;
+        Serial.print(least, HEX);
+        Serial.print(" | ");
+        uint16_t s = number >> 8;
+        s = s & 0x00FF;
+        uint8_t second = s;
+        Serial.println(second, HEX);
+        //uint8_t third = number & 0x00FF0000;
+        //uint8_t most = number & 0xFF000000;
+        buf[2*i] = second;
+        buf[(2*i)+1] = least;
+    }
+}
 
+void convertTo_uint16_t(uint8_t arr[], int bufLength)
+{
+    for (int i = 0; i < bufLength; i++)
+    {
+        uint16_t most = arr[2*i];
+        uint16_t least = arr[(2*i)+1];
+        most = most << 8;
+        most = most & 0xFF00;
+        uint16_t data = most + least;
+        buf[i] = data;
+    }
+}
