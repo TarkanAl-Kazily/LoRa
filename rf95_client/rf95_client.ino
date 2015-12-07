@@ -28,7 +28,6 @@ uint8_t len;
  
 void loop()
 {
-    Serial.print("1: ");
     Serial.println("Sending to rf95_server");
     // Send a message to rf95_server
     Serial.print((int)data[0]);
@@ -38,19 +37,12 @@ void loop()
     Serial.print((int)data[2]);
     Serial.print(" sent. Result: ");
     Serial.println(rf95.send(data, sizeof(data)));
-    Serial.print("2: ");
 
     rf95.waitPacketSent();
-    Serial.print("3: ");
     Serial.println("Packet sent");
-    //  rf95.setModeIdle();
-    //Serial.println("Set to Idle");
-//    delay(400);
-    Serial.print("4: ");
     data[0]++;
     data[1] += 2;
     data[2] += 3;
-    Serial.print("5: ");
 }
 
 
